@@ -1,0 +1,13 @@
+[
+  {
+      "type": "db.kind",
+      "object": "com.palm.kindle.books:1",
+      "caller": "cx.ath.kjhenrie.kindleimport.*",
+      "operations": {
+          "create": "allow",
+          "read": "allow",
+          "update": "allow",
+          "delete": "allow"
+      }
+  }
+]

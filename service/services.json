@@ -1,0 +1,12 @@
+{
+	"id": "cx.ath.kjhenrie.kindleimport.service",
+	"description": "Kindle Import Service",
+	"services": [ {
+		"name": "cx.ath.kjhenrie.kindleimport.service",
+		"description": "Kindle Import Service",
+		"commands": [ { 
+				"name": "kindleImport", 
+				"assistant": "KindleImportAssistant",
+				"public": true } ] 
+	} ]
+}

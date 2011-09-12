@@ -1,0 +1,8 @@
+Building the app:
+
+Execute build.cmd and the application will be placed in the dist directory
+
+Installation notes:
+
+- The com.palm.kindle file will need to be placed in the /etc/palm/db/permissions folder on the TouchPad.  This will grant Kindle-Import permission to modify the Kindle books database.
+- Detailed instructions for creating the import file and using the app are shown in the app

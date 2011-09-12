@@ -1,0 +1,12 @@
+{
+  "id": "cx.ath.kjhenrie.kindleimport",
+  "package_format_version": 2,
+  "loc_name": "Kindle Import",
+  "version": "1.0.0",
+  "icon": "icon.png",
+  "miniicon": "icon.png",
+  "vendor": "Better Apps",
+  "vendorurl": "kjhenrie.ath.cx",
+  "app": "cx.ath.kjhenrie.kindleimport.app",
+  "services": ["cx.ath.kjhenrie.kindleimport.service"]
+}
