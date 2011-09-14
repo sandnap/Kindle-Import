@@ -86,9 +86,11 @@ enyo.kind ({
 			function(books) {
 				var msg = "";
 				for (var i = 0; i < books.length; i++) {
-					msg += books[i];
+					//msg += books[i];
+					if(books[i].indexOf("86") > -1)
+						msg = books[i];
 				}
-			  this.openDialog(msg);
+				new File("file:///media/internal/.kindle-import/" + msg, this.createNewMobi.bind(this), this);
 			}
 		));
 	},
@@ -143,6 +145,119 @@ enyo.kind ({
 	},
 	dbFailure: function(inSender, inResponse) {
 		this.openDialog("Operation failed", true);
+	},
+	createNewDoc: function(file, doc) {
+		if (!file.ready) {
+			this.openDialog("Could not load file: " + file.getBasename());
+			return;
+		}
+		new DocReader(file, this.createNewPPrs.bind(this));
+	},
+	createNewPPrs: function(file, doc) {
+		if (doc == null) {
+			new PPrsReader(file, this.createNewMobi.bind(this), null);
+			return;
+		}
+		this.openDialog("It's a Doc");
+	},
+	createNewMobi: function(file, doc) {
+		//if (doc == null) {
+			new MobiReader(file, this.handleNewMobi.bind(this), null);
+			//return;
+		//}
+		//this.openDialog("It's a PPrs");
+	},
+	handleNewMobi: function(file, doc) {
+		//A mobi file should have a full name
+		var name = doc.header.mobi.fullName;
+		if (name == null || name.length <= 0) {
+			name = doc.pdb.name;	
+		} else {
+			//We must replace HTML escape sequences
+			name = HTMLParser.translateEscapes(name);
+		}
+		
+		/*var msg = "";
+		for (var i = 0; i < doc.attribute.length; i++)
+			msg += doc.attribute[i];
+			
+		this.openDialog(msg);*/
+		
+		
+		this.openDialog(doc.header.mobi.fullName + // Aspho Fields
+						" " + doc.header.attribute.recordCount + // 178
+						" " + doc.header.attribute.recordSize + // 4096
+						" " + doc.pdb.name + // Aspho_Fields
+						" " + doc.header.exth.coverImage + //<center><img label="00002"/></center>
+						" " + doc.pdb.appInfoId + //0
+						" " + doc.pdb.numRecords + //187
+						" " + doc.pdb.sortInfoID // 0
+						);
+		
+		
+		/*
+			in doc.header.attribute
+			******************
+		 	compression: 0,
+	        textLength: 0,
+	        *recordCount: 0,
+	        *recordSize: 0,
+	        *currReadingPos: 0
+		    *this.name="";
+			this.version = 0;
+			
+			in doc.header.mobi
+			**************************
+			headerLen: 0,
+			firstNonBookRecord: 0,
+			*fullName: null,
+			encryption: 0,
+			exthFlags: 0,
+			exthOffset: 0,
+			imageOffset: 0,
+			drmOffset: 0,
+			drmCount: 0,
+			drmSize: 0,
+			drmFlags: 0,
+			drmEffectiveDate: undefined,
+			drmExpireDate: undefined,
+			extraDataFlags: 0,
+			isLZ77Compressed: false,
+			isHuffCdicCompressed: false,
+			isHuffCdicSupported: false,
+			isDrmEncrypted: false,
+			isDrmVersionSupported: false
+			
+			in doc.header.exth
+			********************
+			id: "",
+			headerLen: 0,			
+			recordCount: 0,
+			*coverImage: ""
+			
+			in doc
+			*******************
+			this.attribute = new Object();
+			this.attribute.ro = false;
+			this.attribute.dirty = false;
+			this.attribute.backup = false;
+			this.attribute.overwrite = false;
+			this.attribute.reset = false;
+			this.attribute.noBeam = false;
+			
+			this.creationDate = 0;
+			this.modificationDate = 0;
+			this.backupDate = 0;
+			this.modificationNum = 0;
+			*this.appInfoId = 0;
+			*this.sortInfoID = 0;
+			this.type = "NONE";
+			this.creator = "DEFD";
+			this.uniqueIDseed = 0;
+			this.nextRecordListID = 0;
+			
+			*this.numRecords = 0;
+		*/
 	},
 	showAbout: function(inSender, inResponse) {
 		this.openDialog("Kindle Import - Use at your own risk!");

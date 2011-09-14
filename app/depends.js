@@ -1,5 +1,21 @@
 /* Copyright 2009-2011 Hewlett-Packard Development Company, L.P. All rights reserved. */
 enyo.depends(
+	"source/mobi/Bytes.js",
+	"source/mobi/utf8.js",
+	"source/mobi/windows1250.js",
+	"source/mobi/windows1252.js",
+	"source/mobi/windows1251.js",
+	"source/mobi/encodingList.js",
+	"source/mobi/HTMLParser.js",
+	"source/mobi/FifoBuffer.js",
+	"source/mobi/huffcdic.js",
+	"source/mobi/lz77.js",
+	"source/mobi/ByteReader.js",
+	"source/mobi/PDBRecordInfo.js",
+	"source/mobi/PDBFile.js",
+	"source/mobi/File.js",
+	"source/mobi/MobiRecord.js",
+	"source/mobi/MobiReader.js",
 	"source/KindleImportService.js",
 	"source/KindleImport.js",
 	"source/KindleImport.css"
