@@ -45,29 +45,29 @@ enyo.kind ({
 		{name:"findBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "find", onFailure: "dbFailure", onSuccess: "findResult"}
 	],
 	loadBooks: function() {
+		this.booksInDB();
 		this.$.kindleImport.loadBookData(enyo.bind(this, 
-			function(books) {
+			function(titles) {
 				var msg = "";
 				var d = new Date();
-				for (var i = 0; i < books.length; i++) {
+				for (var i = 0; i < titles.length; i++) {
 					var asin = "Y" + d.getFullYear() + "M" + d.getMonth() + "D" + d.getDate() +
 						"H" + d.getHours() + "S" + d.getSeconds() + "N" + i;
 					if (this.bookAsinsInDB.indexOf('"' + asin + '"') > -1)
 						continue;
-					var parts = books[i].split(" - ");
+					var parts = titles[i].split(" - ");
 					var title = parts[0];
 					var author = parts[1].substring(0, parts[1].indexOf(".mobi"));
 					var b = new Book();
 					b.asin = asin;
 					b.title = title;
 					b.author = author;
-					b.file = books[i];
+					b.file = titles[i];
 					this.importCount++;
 					this.books.push(b);
-					// for now until the renderBookList function is implemented
-					this.importBooks();
 				}
-				
+				// for now until the renderBookList function is implemented
+				this.importBooks();
 			}
 		));
 	},
@@ -79,7 +79,7 @@ enyo.kind ({
 	importBooks: function() {
 		// Loop through the books and add them
 		for (var i = 0; i < this.books.length; i++)
-			addBook(this.books[i]);
+			this.addBook(this.books[i]);
 		
 		this.importSuccess();
 	},
