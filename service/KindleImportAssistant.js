@@ -7,7 +7,7 @@ var KindleImportAssistant = function(){
   
 KindleImportAssistant.prototype = {
 	run: function(f) {
-		fs.readdir("/media/internal/.kindle-import/", function(err, filenames) {
+		fs.readdir("/media/internal/.palmkindle/", function(err, filenames) {
 			var books = [];
 			for (var i = 0; i < filenames.length; i++) {
 				if ( filenames[i].match(/.mobi$/) ) {
