@@ -10,10 +10,9 @@ enyo.kind ({
 			{caption: $L("About"), onclick: "showAbout"},
 		]},
 		{kind: enyo.Header, content: "Kindle Book Import (Sideload)"},
-		{kind: "Scroller", flex: 1, components: [
+		{kind: "Scroller", name: "scroller", flex: 1, components: [
 			{style: "font-size: 14px; padding: 20px", components: [
 				{content: "<b>You can use this application to import Kindle compatible books into the Kindle application. Please read this page and the Help documentation (in the menu) before using this application.</b>"},
-				//{kind: "ImportList", name: "importList"},
 				{kind: "VirtualRepeater", name: "importList",
 					onSetupRow: "setupRow", components: [
 						{kind: "Item", layoutKind: "HFlexLayout", components: [
@@ -27,15 +26,20 @@ enyo.kind ({
 				},
 				{kind: enyo.Button, name: "loadBooksButton", content: "Load Books", onclick: "loadBooks"},
 				{kind: enyo.Button, name: "importbooksButton", content: "Import Books", onclick: "importBooks"},
-				{kind: enyo.Button, name: "deleteBooksButton", content: "Delete All Imported Books From Kindle", onclick: "delBooks"},
+				{kind: enyo.Button, name: "deleteBooksButton", content: "Delete All Imported Books From Kindle", onclick: "confirmDelete"},
 				{content: "<br/>* The asin and title must be unique for each book."},
-				{content: "Roadmap: Add support for cover images. Add fields to edit the book metadata, Do something about the hardcoded total locations value (currently 15000 to support large books)."},
-				{content: "<br/><b>WARNING:  Use this application at your own risk. The author of this application is not responsible for damage caused or data lost while using this application.</b>"},
+				{content: "<br/><b>WARNING:  Use this application at your own risk. The authors of this application is not responsible for damage caused or data lost while using this application.</b>"},
 			]}
 		]},
 		{kind: "KindleImportService", name: "kindleImport", flex: 1},
 		{kind: "Popup", name:"dialog"},
+		{kind: "ModalDialog", name: "screen", content: "Operation in progress..."},
 		{kind: "HelpDialog", name:"help"},
+		{kind: "ModalDialog", name: "confirmDelete", components: [
+			{content: "Are you sure you want to remove all imported books from Kindle?"},
+			{kind: enyo.Button, name: "confirmDeleteButton", content: "Yes", onclick: "delBooks"},
+			{kind: enyo.Button, name: "cancelDeleteButton", content: "No", onclick: "closeConfirmDelete"}
+		]},
 		{name:"addBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "put", onFailure: "dbFailure"},
 		{name:"delBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "del", onFailure: "dbFailure", onSuccess: "deleteSuccess"},
 		{name:"findBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "find", onFailure: "dbFailure", onSuccess: "findResult"}
@@ -59,19 +63,31 @@ enyo.kind ({
 		}
 	},
 	loadBooks: function() {
+		this.showScreen();
+		this.books = [];
+		this.bookTitlesInDB = "";
 		this.booksInDB();
 		this.$.kindleImport.loadBookData(enyo.bind(this, 
 			function(titles) {
 				var msg = "";
 				var d = new Date();
 				for (var i = 0; i < titles.length; i++) {
+					// This book is not named appropriately for the import
+					if (titles[i].indexOf(" - ") < 0)
+						continue;
+					
 					var asin = "Y" + d.getFullYear() + "M" + d.getMonth() + "D" + d.getDate() +
 						"H" + d.getHours() + "S" + d.getSeconds() + "N" + i;
 					var parts = titles[i].split(" - ");
 					var title = parts[0];
 					if (this.bookTitlesInDB.indexOf('"' + title + '"') > -1)
 						continue;
-					var author = parts[1].substring(0, parts[1].indexOf(".mobi"));
+					var author = parts[1];
+					if (parts.length == 2) {
+						author = author.substring(0, parts[1].indexOf(".mobi"));
+					} else {
+						asin = parts[2].substring(0, parts[2].indexOf(".mobi"));
+					}
 					var b = new Book();
 					b.asin = asin;
 					b.title = title;
@@ -80,9 +96,11 @@ enyo.kind ({
 					this.importCount++;
 					this.books.push(b);
 				}
-				// for now until the renderBookList function is implemented
-				//this.importBooks();
-				this.renderBookList();
+				if (this.books.length == 0)
+					this.openDialog("There are no new books to import", true);
+				else
+					this.renderBookList();
+				this.hideScreen();
 			}
 		));
 	},
@@ -93,11 +111,13 @@ enyo.kind ({
 		this.$.importList.render();//load(this.books);
 	},
 	importBooks: function() {
+		this.showScreen();
 		// Loop through the books and add them
 		for (var i = 0; i < this.books.length; i++)
 			this.addBook(this.books[i]);
 		
 		this.importSuccess();
+		this.hideScreen();
 	},
 	booksInDB: function(title) {
 		var fquery = { "select": ["title"],
@@ -107,9 +127,18 @@ enyo.kind ({
 	findResult: function(inSender, inResponse) {
 		this.bookTitlesInDB = enyo.json.stringify(inResponse);
 	},
+	closeConfirmDelete: function() {
+		this.$.confirmDelete.close();
+	},
+	confirmDelete: function() {
+		this.$.confirmDelete.openAtCenter();
+	},
 	delBooks: function() {
+		this.closeConfirmDelete();
+		this.showScreen();
 		var q = { "from":"com.palm.kindle.books:1", "where":[{"prop":"guid","op":"=","val":":A6CD34B2"}] };   
         this.$.delBooksEntry.call({query:q});
+		this.hideScreen();
 	},
 	addBook: function(book) {
 	    var param = {
@@ -142,8 +171,9 @@ enyo.kind ({
 		setTimeout(enyo.bind(this, function() {
 			this.books = [];
 			this.bookTitlesInDB = [];
-		}), 3000);
-		
+			this.$.scroller.scrollTo(0, 0);
+			this.renderBookList();
+		}), 2000);
 	},
 	deleteSuccess: function(inSender, inResponse) {
 		this.openDialog("Imported books were removed from Kindle", true);
@@ -165,6 +195,12 @@ enyo.kind ({
 				this.$.dialog.close();
 			}), 2000);
 		}
+	},
+	showScreen: function() {
+		this.$.screen.openAtCenter();
+	},
+	hideScreen: function() {
+		this.$.screen.close();
 	}
 });
 
