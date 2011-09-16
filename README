@@ -1,8 +1,25 @@
+Kindle Import
+--------------------------------------------------
+
+Kindle Import is an App for the HP TouchPad that will faciliate sideloading books into the Kindle application.
+
+
+Version 1.1.0:
+
+Version 1.1.0 of the app can work in conjunction with the export (mobi) book functionality in Calibre which can be downloaded from http://calibre-ebook.com/.  This version uses the name of the book file to extract the title, author, and ASIM (optional) from the filename of the book (Title - Author - ASIN.mobi).  The default Calibre export filename for mobi files will work without modification.  See the Help menu for detailed instructions.
+
+
+Version 1.0.0:
+
+version 1.0.0 of the app uses an pipe-delimited import file containing the book metadata to import mobi books.  You can use this version if you would prefer to use book filenames that do not follow the convention used in version 1.1.0.
+
+
+
 Building the app:
 
 Execute build.cmd and the application will be placed in the dist directory
 
 Installation notes:
 
-- The com.palm.kindle file will need to be placed in the /etc/palm/db/permissions folder on the TouchPad.  This will grant Kindle-Import permission to modify the Kindle books database.
-- Detailed instructions for creating the import file and using the app are shown in the app
+- The com.palm.kindle file will need to be placed in the /etc/palm/db/permissions folder on the TouchPad.  This will grant Kindle-Import permission to modify the Kindle books database.  This step will eventually be eliminated.
+- View the Help menu for more detailed instructions
