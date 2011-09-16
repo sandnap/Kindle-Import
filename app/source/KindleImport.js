@@ -59,7 +59,7 @@ enyo.kind ({
 		}
 	},
 	loadBooks: function() {
-		//this.booksInDB();
+		this.booksInDB();
 		this.$.kindleImport.loadBookData(enyo.bind(this, 
 			function(titles) {
 				var msg = "";
@@ -141,7 +141,7 @@ enyo.kind ({
 		
 		setTimeout(enyo.bind(this, function() {
 			this.books = [];
-			this.bookAsinsInDB = [];
+			this.bookTitlesInDB = [];
 		}), 3000);
 		
 	},
