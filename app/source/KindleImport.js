@@ -83,16 +83,21 @@ enyo.kind ({
 					if (this.bookTitlesInDB.indexOf('"' + title + '"') > -1)
 						continue;
 					var author = parts[1];
+					var locationsTotal = 15000;
 					if (parts.length == 2) {
 						author = author.substring(0, parts[1].indexOf(".mobi"));
-					} else {
+					} else if (parts.length == 3) {
 						asin = parts[2].substring(0, parts[2].indexOf(".mobi"));
+					} else if (parts.length == 4) {
+						asin = parts[2];
+						locationsTotal = parts[3].substring(0, parts[3].indexOf(".mobi"));
 					}
 					var b = new Book();
 					b.asin = asin;
 					b.title = title;
 					b.author = author;
 					b.file = titles[i];
+					b.locationsTotal = locationsTotal;
 					this.importCount++;
 					this.books.push(b);
 				}
@@ -147,7 +152,7 @@ enyo.kind ({
 			"author": book.author,
 			"authorIndex": book.author,
 			"bookFilePath": "/media/internal/.palmkindle/" + book.file,
-			"coverImagePath": "",
+			"coverImagePath": "/media/internal/.palmkindle/coverCache/" + book.getImage(),
 			"guid": ":A6CD34B2",
 			"isDeleted": "0",
 			"locationsTotal": book.locationsTotal,
@@ -214,5 +219,8 @@ enyo.kind({
 	locationsCompleted: 1,
 	description: "",
 	doImport: true,
-	doDelete: false
+	doDelete: false,
+	getImage: function() {
+		return this.file.substring(0, this.file.indexOf(".mobi")) + ".jpg";
+	}
 });
