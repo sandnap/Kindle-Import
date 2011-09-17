@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+umask 0000
+
+APP_ID=cx.ath.kjhenrie.kindleimport.app
+APP_DIR=/media/cryptofs/apps/usr/palm/applications/${APP_ID}
+DB_PERM_DIR=/etc/palm/db/permissions
