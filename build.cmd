@@ -1,1 +1,0 @@
-palm-package -o ./dist --exclude="dist" --exclude=".git" package app service

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+mount -o rw,remount /
+
+rm /etc/palm/db/permissions/com.palm.kindle
+
+mount -o ro,remount /
+
+exit 0

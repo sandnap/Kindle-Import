@@ -1,0 +1,25 @@
+#!/bin/sh
+
+mount -o rw,remount /
+
+rm /etc/palm/db/permissions/com.palm.kindle
+
+echo '[
+  {
+      "type": "db.kind",
+      "object": "com.palm.kindle.books:1",
+      "caller": "cx.ath.kjhenrie.kindleimport.*",
+      "operations": {
+          "create": "allow",
+          "read": "allow",
+          "update": "allow",
+          "delete": "allow"
+      }
+  }
+]' > /etc/palm/db/permissions/com.palm.kindle
+                                                                          
+chmod 777 /etc/palm/db/permissions/com.palm.kindle
+                                                                          
+mount -o ro,remount /
+                                                                          
+exit 0

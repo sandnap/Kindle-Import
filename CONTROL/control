@@ -1,0 +1,10 @@
+Package: cx.ath.kjhenrie.kindleimport
+Version: 1.1.4
+Section: misc
+Priority: optional
+Architecture: all
+Installed-Size: 13
+Maintainer: N/A <nobody@example.com>
+Description: This is a webOS application.
+webOS-Package-Format-Version: 2
+webOS-Packager-Version: 3.0.0b18
