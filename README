@@ -4,6 +4,11 @@ Kindle Import
 Kindle Import is an App for the HP TouchPad that will faciliate sideloading books into the Kindle application.
 
 
+Version 1.1.5:
+
+Updated README and the Help Dialog to reflect the functional changes in 1.1.4.
+
+
 Version 1.1.4:
 
 Version 1.1.4 of the app should fix the database permissions issue.
