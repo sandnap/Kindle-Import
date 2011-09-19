@@ -1,10 +1,10 @@
 Package: cx.ath.kjhenrie.kindleimport
-Version: 1.1.5
+Version: 1.1.6
 Section: misc
 Priority: optional
 Architecture: all
 Installed-Size: 13
-Maintainer: N/A <nobody@example.com>
-Description: This is a webOS application.
+Maintainer: kjhenrie@yahoo.com
+Description: Sideload compatible books into the Kindle app
 webOS-Package-Format-Version: 2
 webOS-Packager-Version: 3.0.0b18

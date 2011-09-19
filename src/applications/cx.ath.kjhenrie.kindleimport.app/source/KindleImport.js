@@ -2,6 +2,7 @@ enyo.kind ({
 	name: "KindleImport",
 	kind: enyo.VFlexBox,
 	books: [],
+	covers: [],
 	bookTitlesInDB: "",
 	importCount: 0,
 	components: [
@@ -67,6 +68,13 @@ enyo.kind ({
 		this.books = [];
 		this.bookTitlesInDB = "";
 		this.booksInDB();
+		this.$.kindleImport.loadCoverData(enyo.bind(this, 
+			function(coverTitles) {
+				for (var i = 0; i < coverTitles.length; i++) {
+					this.covers.push(coverTitles[i]);
+				}
+			}
+		)),
 		this.$.kindleImport.loadBookData(enyo.bind(this, 
 			function(titles) {
 				var msg = "";
@@ -98,6 +106,11 @@ enyo.kind ({
 					b.author = author;
 					b.file = titles[i];
 					b.locationsTotal = locationsTotal;
+					// Tell the book if we have a cover
+					for (var j = 0; j < this.covers.length; j++) {
+						if (this.covers[j].indexOf(title) > -1 && this.covers[j].indexOf(author) > -1)
+							b.hasCover = true;
+					}
 					this.importCount++;
 					this.books.push(b);
 				}
@@ -152,7 +165,7 @@ enyo.kind ({
 			"author": book.author,
 			"authorIndex": book.author,
 			"bookFilePath": "/media/internal/.palmkindle/" + book.file,
-			"coverImagePath": "/media/internal/.palmkindle/coverCache/" + book.getImage(),
+			"coverImagePath": book.getImage(),
 			"guid": ":A6CD34B2",
 			"isDeleted": "0",
 			"locationsTotal": book.locationsTotal,
@@ -215,12 +228,16 @@ enyo.kind({
 	title: "",
 	author: "",
 	file: "",
+	hasCover: false,
 	locationsTotal: 15000,
 	locationsCompleted: 1,
 	description: "",
 	doImport: true,
 	doDelete: false,
 	getImage: function() {
-		return this.file.substring(0, this.file.indexOf(".mobi")) + ".jpg";
+		if (this.hasCover)
+			return "/media/internal/.palmkindle/coverCache/" + this.file.substring(0, this.file.indexOf(".mobi")) + ".jpg";
+		else
+			return "/media/cryptofs/apps/usr/palm/applications/cx.ath.kjhenrie.kindleimport.app/images/item-cover-default.png";
 	}
 });

@@ -3,10 +3,15 @@
 	"description": "Kindle Import Service",
 	"services": [ {
 		"name": "cx.ath.kjhenrie.kindleimport.service",
-		"description": "Kindle Import Service",
+		"description": "Kindle Import",
 		"commands": [ { 
 				"name": "kindleImport", 
 				"assistant": "KindleImportAssistant",
-				"public": true } ] 
-	} ]
+				"public": true },
+				{ 
+				"name": "kindleCover", 
+				"assistant": "KindleCoverAssistant",
+				"public": true }
+		]  }
+	]
 }
