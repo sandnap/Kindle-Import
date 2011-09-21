@@ -1,6 +1,6 @@
 {
 	"id": "cx.ath.kjhenrie.kindleimport.app",
-	"version": "1.1.6",
+	"version": "1.2.0",
 	"vendor": "Better Apps",
 	"type": "web",
 	"main": "index.html",
