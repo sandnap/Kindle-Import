@@ -18,8 +18,9 @@ examples:
 	nautilus /opt/PalmSDK/Current/share/refcode/framework/enyo/1.0/support/
 	
 %.ipk:
+	
 	rm -rf *.ipk
-	palm-package src/packages/cx.ath.kjhenrie.kindleimport src/applications/cx.ath.kjhenrie.kindleimport.app src/services/cx.ath.kjhenrie.kindleimport.service
+	./ipkg-build.sh ./
 
 package: %.ipk
 
