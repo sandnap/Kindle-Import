@@ -3,6 +3,8 @@
 # ipkg-build -- construct a .ipk from a directory
 # Carl Worth <cworth@east.isi.edu>
 # based on a script by Steve Redler IV, steve@sr-tech.com 5-21-2001
+#
+# Modified to package Kindle Import with HP TouchPad compatible postinst and prerm scripts.
 set -e
 
 ipkg_extract_value() {
