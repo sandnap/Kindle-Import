@@ -1,0 +1,8 @@
+.enyo-item {
+	font-size: 12px;
+}
+.enyo-item div {
+	/*float: left;*/
+	text-align: left;
+	padding-left: 28px;
+}

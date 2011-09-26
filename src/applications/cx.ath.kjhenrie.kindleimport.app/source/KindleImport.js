@@ -5,6 +5,8 @@ enyo.kind ({
 	covers: [],
 	bookTitlesInDB: "",
 	importCount: 0,
+	importMode: false,
+	updateMode: false,
 	components: [
 		{kind: "AppMenu", name: "appMenu", lazy: false, components: [
 			{caption: $L("Help"), onclick: "showHelp"},
@@ -13,23 +15,37 @@ enyo.kind ({
 		{kind: enyo.Header, content: "Kindle Book Import (Sideload)"},
 		{kind: "Scroller", name: "scroller", flex: 1, components: [
 			{style: "font-size: 14px; padding: 20px", components: [
-				{content: "<b>You can use this application to import Kindle compatible books into the Kindle application. Please read this page and the Help documentation (in the menu) before using this application.</b>"},
-				{kind: "VirtualRepeater", name: "importList",
+				{content: "<b>You can use this application to import Kindle compatible books into the Kindle application. Please read this page and the Help documentation (in the menu) before using this application."},
+				{kind: "VirtualRepeater", style: "margin-top: 20px;", name: "importList",
 					onSetupRow: "setupRow", components: [
-						{kind: "Item", layoutKind: "HFlexLayout", components: [
-							{name: "fileName", flex: 1},
-							{name: "asin"},
-							{name: "title"},
-							{name: "author"},
-							{name: "locations"},
+						{kind: "Item", name: "newBook", layoutKind: "HFlexLayout", components: [
+							{name: "importCB", kind: "CheckBox", checked: true, style: "width: 15%", onclick: "unselectBook"},
+							{name: "title", style: "width: 25%"},
+							{name: "asin",  style: "width: 20%"},
+							{name: "author",  style: "width: 25%"},
+							{name: "locations", kind: "Input",  style: "width: 15%", onchange: "updateLocation"},
 						]}
 					]
 				},
-				{kind: enyo.Button, name: "loadBooksButton", content: "Load Books", onclick: "loadBooks"},
-				{kind: enyo.Button, name: "importbooksButton", content: "Import Books", onclick: "importBooks"},
+				{kind: "VirtualRepeater", style: "margin-top: 20px;", name: "existingList",
+					onSetupRow: "setupExistingRow", components: [
+						{kind: "Item", name: "existingBook", layoutKind: "HFlexLayout", components: [
+							{name: "deleteCB", kind: "CheckBox", checked: false, style: "width: 15%", onclick: "selectExistingBook"},
+							{name: "eTitle", style: "width: 25%"},
+							{name: "eAsin",  style: "width: 20%"},
+							{name: "eAuthor",  style: "width: 25%"},
+							{name: "eLocations", kind: "Input",  style: "width: 15%", onchange: "updateExistingLocation"},
+						]}
+					]
+				},
+				{kind: enyo.Button, name: "loadBooksButton", style: "margin-top: 20px;", content: "Load New Books", onclick: "loadBooks"},
+				{kind: enyo.Button, name: "importbooksButton", disabled: true, content: "Import Books", onclick: "importBooks"},
+				{kind: enyo.Button, name: "loadExistingBooksButton", style: "margin-top: 20px;", content: "Load Existing Books", onclick: "loadExistingBooks"},
+				{kind: enyo.Button, name: "deleteSelectedBooksButton", disabled: true, content: "Delete Selected Books From Kindle", onclick: "confirmSelectDelete"},
 				{kind: enyo.Button, name: "deleteBooksButton", content: "Delete All Imported Books From Kindle", onclick: "confirmDelete"},
+				//{kind: enyo.Button, name: "refreshCovers", content: "Refresh All Covers", onclick: "refreshCovers"},
 				{content: "<br/>* The asin and title must be unique for each book."},
-				{content: "<br/><b>WARNING:  Use this application at your own risk. The authors of this application is not responsible for damage caused or data lost while using this application.</b>"},
+				{content: "<br/><b>WARNING:  Use this application at your own risk. The author of this application is not responsible for damage caused or data lost while using this application.</b>"},
 			]}
 		]},
 		{kind: "KindleImportService", name: "kindleImport", flex: 1},
@@ -41,40 +57,154 @@ enyo.kind ({
 			{kind: enyo.Button, name: "confirmDeleteButton", content: "Yes", onclick: "delBooks"},
 			{kind: enyo.Button, name: "cancelDeleteButton", content: "No", onclick: "closeConfirmDelete"}
 		]},
+		{kind: "ModalDialog", name: "confirmSelectDelete", components: [
+			{content: "Are you sure you want to remove the selected books from Kindle?"},
+			{kind: enyo.Button, name: "confirmDeleteButton", content: "Yes", onclick: "delSelectBooks"},
+			{kind: enyo.Button, name: "cancelDeleteButton", content: "No", onclick: "closeConfirmSelectDelete"}
+		]},
 		{name:"addBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "put", onFailure: "dbFailure"},
+		{name:"mergeBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "merge", onFailure: "dbFailure"},
 		{name:"delBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "del", onFailure: "dbFailure", onSuccess: "deleteSuccess"},
-		{name:"findBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "find", onFailure: "dbFailure", onSuccess: "findResult"}
+		{name:"delSelectBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "del", onFailure: "dbFailure"},
+		{name:"findBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "find", onFailure: "dbFailure", onSuccess: "findResult"},
+		{name:"findExistingBooksEntry", kind: "DbService", dbKind: "com.palm.kindle.books:1", method: "find", onFailure: "dbFailure", onSuccess: "findExistingResult"}
 	],
-	setupRow: function(inSender, inIndex) {
+	refreshCovers: function() {
+		// Not fully implemented
+		this.resetPage();
+		this.loadCoverData();
+		for (var j = 0; j < this.covers.length; j++) {
+			if (this.covers[j].indexOf("-medium.jpg") > -1) {
+				// Parse title and author from cover image and merge with matching book
+				//var props = {"coverImagePath":"/media/internal/.palmkindle/coverCache/" + this.covers[j].substring(0, this.covers[j].indexOf("-medium")) + ".jpg"};
+				this.openDialog(this.covers[j]);
+				//var q = { "from":"com.palm.kindle.books:1", "where":[{"prop":"asin","op":"=","val":this.books[inIndex.rowIndex].asin}] };   
+				//this.$.mergeBooksEntry.call({query:q, "props":props});
+			}
+		}
+	},
+	updateExistingLocation: function(inSender, inIndex) {
+		var props = {"locationsTotal":this.$.eLocations.getValue()};
+		var q = { "from":"com.palm.kindle.books:1", "where":[{"prop":"asin","op":"=","val":this.books[inIndex.rowIndex].asin}] };   
+		this.$.mergeBooksEntry.call({query:q, "props":props});
+	},
+	resetPage: function() {
+		this.books = [];
+		this.$.importList.render();
+		this.$.existingList.render();
+		this.importMode = false;
+		this.updateMode = false;
+		this.covers = [];
+		this.bookTitlesInDB = "";
+		this.importCount = 0;
+		this.setDeleteButtonMode();
+		this.setImportButtonMode();
+		this.$.scroller.scrollTo(0, 0);
+	},
+	closeConfirmSelectDelete: function() {
+		this.$.confirmSelectDelete.close();
+	},
+	confirmSelectDelete: function() {
+		this.$.confirmSelectDelete.openAtCenter();
+	},
+	delSelectBooks: function() {
+		this.closeConfirmSelectDelete();
+		var t = 0;
+		this.showScreen();
+		for (var i = 0; i < this.books.length; i++) {
+			if (this.books[i].doDelete == true) {
+				var q = { "from":"com.palm.kindle.books:1", "where":[{"prop":"asin","op":"=","val":this.books[i].asin}] };   
+				this.$.delSelectBooksEntry.call({query:q});
+				t++;
+			}
+		}
+		this.resetPage();
+		this.hideScreen();
+		this.openDialog(t + " books deleted", true);
+	},
+	loadExistingBooks: function() {
+		this.showScreen();
+		this.resetPage();
+		this.importMode = false;
+		this.updateMode = true;
+		this.loadBooksFromDB();
+	},
+	loadBooksFromDB: function(title) {
+		var fquery = { "select": ["title", "asin", "author", "locationsTotal"],
+                       "from":"com.palm.kindle.books:1", "where":[{"prop":"guid","op":"=","val":":A6CD34B2"}] };
+        this.$.findExistingBooksEntry.call({query:fquery});
+	},
+	findExistingResult: function(inSender, inResponse) {
+		this.books = [];
+		for (var i = 0; i < inResponse.results.length; i++) {
+			var b = new Book();
+			b.asin = inResponse.results[i].asin;
+			b.title = inResponse.results[i].title;
+			b.author = inResponse.results[i].author;
+			b.locationsTotal = inResponse.results[i].locationsTotal;
+			this.books.push(b);
+		}
+		this.$.existingList.render();
+		this.hideScreen();
+		this.setDeleteButtonMode();
+		this.$.scroller.scrollTo(0, 0);
+	},
+	setupExistingRow: function(inSender, inIndex) {
 		var row = this.books[inIndex];
 		if (row) {
-			var space = "          ";
 			var title = row.title;
-			if (row.title.length > 20)
-				title = title.substring(0, 20) + "...";
-			var file = row.file;
-			if (row.file.length > 30)
-				file = file.substring(0, 30) + "... .mobi";
-			this.$.fileName.setContent(file + space);
-			this.$.asin.setContent(row.asin + space);
-			this.$.title.setContent(title + space);
-			this.$.author.setContent(row.author + space);
-			this.$.locations.setContent(row.locationsTotal);
+			if (row.title.length > 30)
+				title = title.substring(0, 29) + "...";
+			var author = row.author;
+			if (row.author.length > 30)
+				author = author.substring(0, 29) + "...";
+			this.$.eTitle.setContent(title);
+			this.$.eAsin.setContent(row.asin);
+			this.$.eAuthor.setContent(author);
+			this.$.eLocations.setValue(row.locationsTotal);
 			return true;
 		}
 	},
-	loadBooks: function() {
-		this.showScreen();
-		this.books = [];
-		this.bookTitlesInDB = "";
-		this.booksInDB();
+	selectExistingBook: function(inSender, inIndex) {
+		if (this.$.deleteCB.checked == true)
+			this.books[inIndex.rowIndex].doDelete = true;
+		else
+			this.books[inIndex.rowIndex].doDelete = false;
+	},
+	setupRow: function(inSender, inIndex) {
+		var row = this.books[inIndex];
+		if (row) {
+			var title = row.title;
+			if (row.title.length > 30)
+				title = title.substring(0, 29) + "...";
+			var author = row.author;
+			if (row.author.length > 30)
+				author = author.substring(0, 29) + "...";
+			this.$.title.setContent(title);
+			this.$.asin.setContent(row.asin);
+			this.$.author.setContent(author);
+			this.$.locations.setValue(row.locationsTotal);
+			return true;
+		}
+	},
+	loadCoverData: function() {
+		this.covers = [];
 		this.$.kindleImport.loadCoverData(enyo.bind(this, 
 			function(coverTitles) {
 				for (var i = 0; i < coverTitles.length; i++) {
 					this.covers.push(coverTitles[i]);
 				}
 			}
-		)),
+		))
+	},
+	loadBooks: function() {
+		this.showScreen();
+		this.resetPage();
+		this.importMode = true;
+		this.updateMode = false;
+		this.bookTitlesInDB = "";
+		this.booksInDB();
+		this.loadCoverData();
 		this.$.kindleImport.loadBookData(enyo.bind(this, 
 			function(titles) {
 				var msg = "";
@@ -111,29 +241,55 @@ enyo.kind ({
 						if (this.covers[j].indexOf(title) > -1 && this.covers[j].indexOf(author) > -1)
 							b.hasCover = true;
 					}
-					this.importCount++;
 					this.books.push(b);
 				}
 				if (this.books.length == 0)
 					this.openDialog("There are no new books to import", true);
 				else
-					this.renderBookList();
+					this.renderImportList();
+					
+				this.setImportButtonMode();
+					
 				this.hideScreen();
 			}
 		));
 	},
-	renderBookList: function() {
-		// render a list of books in the import directory but not in the database
-		// display the filename, asin, title, author, description?, locationsTotal, locationsCompleted
-		// and allow all but the filename to be edited
-		this.$.importList.render();//load(this.books);
+	renderImportList: function() {
+		this.$.importList.render();
+		this.$.scroller.scrollTo(0, 0);
+	},
+	setImportButtonMode: function(noLoop) {
+		this.$.importbooksButton.setDisabled(true);
+		if (this.importMode == true && this.books.length > 0)
+			this.$.importbooksButton.setDisabled(false);
+		if (noLoop != true)
+			this.setDeleteButtonMode(true);
+	},
+	setDeleteButtonMode: function(noLoop) {
+		this.$.deleteSelectedBooksButton.setDisabled(true);
+		if (this.updateMode == true && this.books.length > 0)
+			this.$.deleteSelectedBooksButton.setDisabled(false);
+		if (noLoop != true)
+			this.setImportButtonMode(true);
+	},
+	unselectBook: function(inSender, inIndex) {
+		if (this.$.importCB.checked == true)
+			this.books[inIndex.rowIndex].doImport = true;
+		else
+			this.books[inIndex.rowIndex].doImport = false;
+	},
+	updateLocation: function(inSender, inIndex) {
+		this.books[inIndex.rowIndex].locationsTotal = this.$.locations.getValue();
 	},
 	importBooks: function() {
 		this.showScreen();
 		// Loop through the books and add them
-		for (var i = 0; i < this.books.length; i++)
-			this.addBook(this.books[i]);
-		
+		for (var i = 0; i < this.books.length; i++) {
+			if (this.books[i].doImport == true) {
+				this.addBook(this.books[i]);
+				this.importCount++;
+			}
+		}
 		this.importSuccess();
 		this.hideScreen();
 	},
@@ -184,17 +340,15 @@ enyo.kind ({
 		this.$.addBooksEntry.call({objects: objs});
 	}, 
 	importSuccess: function() {
-		this.openDialog(this.books.length + " were successfully imported", true);
+		this.openDialog(this.importCount + " were successfully imported", true);
 		
 		setTimeout(enyo.bind(this, function() {
-			this.books = [];
-			this.bookTitlesInDB = [];
-			this.$.scroller.scrollTo(0, 0);
-			this.renderBookList();
+			this.resetPage();
 		}), 2000);
 	},
 	deleteSuccess: function(inSender, inResponse) {
 		this.openDialog("Imported books were removed from Kindle", true);
+		this.resetPage();
 	},
 	dbFailure: function(inSender, inResponse) {
 		this.openDialog("Operation failed", true);
@@ -203,7 +357,7 @@ enyo.kind ({
 		this.$.help.openAtCenter();
 	},
 	showAbout: function(inSender, inResponse) {
-		this.openDialog("Kindle Import - Use at your own risk!");
+		this.openDialog("Kindle Import");
 	},
 	openDialog: function(msg, autoClose) {
 		this.$.dialog.setContent(msg);
