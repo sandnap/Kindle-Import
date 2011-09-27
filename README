@@ -7,6 +7,14 @@ Packaging the Application.
 
 Linux users can call 'make package' or './ipkg-build.sh ./'
 
+Version 1.3.0:
+
+Added the ability to delete one or more books in addition to the delete all books option
+Added the ability to change the book "locations" field prior or after importing
+Disabled buttons that should not be used while in the current view
+Added the ablity to choose which books to import (defaults to all)
+User interface enhancements
+Updated help dialog to reflect the new changes
 
 Version 1.2.0:
 
