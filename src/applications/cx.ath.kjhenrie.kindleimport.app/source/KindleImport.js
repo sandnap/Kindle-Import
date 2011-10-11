@@ -72,7 +72,7 @@ enyo.kind ({
 	 *********** BEGIN RENDER IMPORT LIST FUNCTIONS *********
 	 *********************************************************/
 	loadBooks: function() {
-		enyo.log("Enter loadBooks");
+		this.log("Enter loadBooks");
 		this.showScreen();
 		this.resetPage();
 		this.importMode = true;
@@ -81,20 +81,26 @@ enyo.kind ({
 		this.booksInDB();
 	},
 	booksInDB: function() {
+		this.log("Enter booksInDB");
 		var fquery = { "select": ["title"],
                        "from":"com.palm.kindle.books:1" };
         this.$.findBooksEntry.call({query:fquery});
 	},
 	findResult: function(inSender, inResponse) {
+		this.log("Enter findResult (booksInDB)");
 		this.bookTitlesInDB = enyo.json.stringify(inResponse);
+		this.log("Book Title String: " + this.bookTitlesInDB);
 		this.loadCoverData();
 	},
 	// LOAD THE COVER FILENAMES FROM THE coverCache DIRECTORY
 	loadCoverData: function() {
+		this.log("Enter loadCoverData");
 		this.covers = [];
 		this.$.kindleImport.loadCoverData(enyo.bind(this, 
 			function(coverTitles) {
+				this.log("Total covers found: " + coverTitles.length);
 				for (var i = 0; i < coverTitles.length; i++) {
+					this.log("Adding Cover: " + coverTitles[i]);
 					this.covers.push(coverTitles[i]);
 				}
 				this.loadBookData();
@@ -103,8 +109,10 @@ enyo.kind ({
 	},
 	// LOAD THE BOOKS FROM THE .palmkindle FOLDER AND RENDER THE IMPORT LIST
 	loadBookData: function() {
+		this.log("Enter loadBookData");
 		this.$.kindleImport.loadBookData(enyo.bind(this, 
 			function(titles) {
+				this.log("Total Books Found: " + titles.length);
 				var msg = "";
 				var d = new Date();
 				for (var i = 0; i < titles.length; i++) {
@@ -139,6 +147,7 @@ enyo.kind ({
 						if (this.covers[j].indexOf(title) > -1 && this.covers[j].indexOf(author) > -1)
 							b.hasCover = true;
 					}
+					this.log("Adding Book: " + b.title);
 					this.books.push(b);
 				}
 				if (this.books.length == 0)
@@ -153,12 +162,14 @@ enyo.kind ({
 		));
 	},
 	renderImportList: function() {
+		this.log("Enter renderImportList");
 		this.$.importList.render();
 		this.$.scroller.scrollTo(0, 0);
 	},
 	setupRow: function(inSender, inIndex) {
 		var row = this.books[inIndex];
 		if (row) {
+			this.log("Enter setUpRow for book: " + row.title);
 			var title = row.title;
 			if (row.title.length > 30)
 				title = title.substring(0, 29) + "...";
@@ -391,6 +402,9 @@ enyo.kind ({
 	},
 	hideScreen: function() {
 		this.$.screen.close();
+	},
+	log: function(message) {
+		enyo.log(message);
 	}
 });
 
