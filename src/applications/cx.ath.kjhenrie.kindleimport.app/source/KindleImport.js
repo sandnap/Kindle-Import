@@ -386,7 +386,7 @@ enyo.kind ({
 		this.$.help.openAtCenter();
 	},
 	showAbout: function(inSender, inResponse) {
-		this.openDialog("Kindle Import - v1.3.1");
+		this.openDialog("Kindle Import - v1.3.2");
 	},
 	openDialog: function(msg, autoClose) {
 		this.$.dialog.setContent(msg);
