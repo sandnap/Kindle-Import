@@ -60,3 +60,4 @@ Version 1.0.0:
 version 1.0.0 of the app uses an pipe-delimited import file containing the book metadata to import mobi books.  You can use this version if you would prefer to use book filenames that do not follow the convention used in version 1.1.0.
 
 - View the Help menu for more detailed instructions
+
